@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # iptables firewall.
 #
 # This file should be located at /etc/firewall.bash, and is meant to work with
@@ -16,12 +16,10 @@
 # @author Jeff Geerling
 
 # No spoofing.
-if [ -e /proc/sys/net/ipv4/conf/all/rp_filter ]
-then
-for filter in /proc/sys/net/ipv4/conf/*/rp_filter
-do
-echo 1 > $filter
-done
+if [ -e /proc/sys/net/ipv4/conf/all/rp_filter ]; then
+    for filter in /proc/sys/net/ipv4/conf/*/rp_filter; do
+        echo 1 > $filter
+    done
 fi
 
 # Set the default rules.
