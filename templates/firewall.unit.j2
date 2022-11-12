@@ -4,7 +4,7 @@ After=syslog.target network.target
 
 [Service]
 Type=oneshot
-ExecStart=/etc/firewall.bash
+ExecStart=/usr/local/sbin/firewall.sh
 ExecStop=/sbin/iptables -F
 RemainAfterExit=yes
 

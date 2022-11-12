@@ -1,7 +1,7 @@
 #! /bin/sh
 # /etc/init.d/firewall
 #
-# Firewall init script, to be used with /etc/firewall.bash by Jeff Geerling.
+# Firewall init script, to be used with /usr/local/sbin/firewall.sh by Jeff Geerling.
 #
 # @author Jeff Geerling
 
@@ -19,7 +19,7 @@
 case "$1" in
   start)
     echo "Starting firewall."
-    /etc/firewall.bash
+    /usr/local/sbin/firewall.sh
     ;;
   stop)
     echo "Stopping firewall."
@@ -30,7 +30,7 @@ case "$1" in
     ;;
   restart)
     echo "Restarting firewall."
-    /etc/firewall.bash
+    /usr/local/sbin/firewall.sh
     ;;
   status)
     echo -e "`iptables -L -n`"
