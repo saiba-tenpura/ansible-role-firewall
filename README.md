@@ -30,7 +30,7 @@ firewall_flush_rules_and_chains: true
 Whether to flush all rules and chains whenever the firewall is restarted. Set this to `false` if there are other processes managing iptables (e.g. Docker).
 
 ```yaml
-firewall_template: firewall.bash.j2
+firewall_template: firewall.sh.j2
 ```
 
 The template to use when generating firewall rules.

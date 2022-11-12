@@ -7,12 +7,12 @@
 - name: Flush iptables the first time playbook runs.
   command:
     cmd: iptables -F
-    creates: /etc/firewall.bash
+    creates: /usr/local/sbin/firewall.sh
 
 - name: Copy firewall script into place.
   template:
-    src: "{{ firewall_template | default(firewall_template)}}"
-    dest: /etc/firewall.bash
+    src: "{{ firewall_template | default(firewall_template) }}"
+    dest: /usr/local/sbin/firewall.sh
     owner: root
     group: root
     mode: 0744
