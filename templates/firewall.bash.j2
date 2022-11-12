@@ -38,6 +38,12 @@ iptables -X
 # Accept traffic from loopback interface (localhost).
 iptables -A INPUT -i lo -j ACCEPT
 
+# Allow established connections:
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Drop Invalid Packets
+iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
+
 # Forwarded ports.
 {# Add a rule for each forwarded port #}
 {% for forwarded_port in firewall_forwarded_tcp_ports %}
@@ -70,9 +76,6 @@ iptables -A INPUT -p udp --sport 123 -j ACCEPT
 {{ rule }}
 {% endfor %}
 
-# Allow established connections:
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-
 # Log EVERYTHING (ONLY for Debug).
 # iptables -A INPUT -j LOG
 
@@ -96,6 +99,12 @@ if [ -x "$(which ip6tables 2>/dev/null)" ]; then
 
   # Accept traffic from loopback interface (localhost).
   ip6tables -A INPUT -i lo -j ACCEPT
+
+  # Allow established connections:
+  ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+  # Drop Invalid Packets
+  ip6tables -A INPUT -m conntrack --ctstate INVALID -j DROP
 
   # Open ports.
 {# Add a rule for each open port #}
@@ -122,9 +131,6 @@ if [ -x "$(which ip6tables 2>/dev/null)" ]; then
 {% for rule in firewall_ip6_additional_rules %}
   {{ rule }}
 {% endfor %}
-
-  # Allow established connections:
-  ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
   # Log EVERYTHING (ONLY for Debug).
   # ip6tables -A INPUT -j LOG
