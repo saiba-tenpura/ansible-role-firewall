@@ -1,0 +1,5 @@
+---
+iptables_service_package: iptables-services
+iptables_save_path: /etc/sysconfig
+iptables_file_name: iptables
+ip6tables_file_name: ip6tables
