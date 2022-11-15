@@ -64,13 +64,6 @@ iptables -A INPUT -p tcp --dport {{ port }} -m conntrack --ctstate NEW,ESTABLISH
 iptables -A INPUT -p udp --dport {{ port }} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 {% endfor %}
 
-# Accept icmp ping requests.
-iptables -A INPUT -p icmp -j ACCEPT
-
-# Allow NTP traffic for time synchronization.
-iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
-iptables -A INPUT -p udp --sport 123 -j ACCEPT
-
 # Additional custom rules.
 {% for rule in firewall_additional_rules %}
 {{ rule }}
@@ -114,13 +107,6 @@ if [ -x "$(which ip6tables 2>/dev/null)" ]; then
 {% for port in firewall_allowed_udp_ports %}
   ip6tables -A INPUT -p udp --dport {{ port }} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 {% endfor %}
-
-  # Accept icmp ping requests.
-  ip6tables -A INPUT -p icmpv6 -j ACCEPT
-
-  # Allow NTP traffic for time synchronization.
-  ip6tables -A OUTPUT -p udp --dport 123 -j ACCEPT
-  ip6tables -A INPUT -p udp --sport 123 -j ACCEPT
 
   # Additional custom rules.
 {% for rule in firewall_ip6_additional_rules %}
