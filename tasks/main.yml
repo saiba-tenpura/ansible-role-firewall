@@ -1,46 +1,82 @@
 ---
+- name: Load variables based on OS family.
+  include_vars: '{{ ansible_os_family }}.yml'
+
 - name: Ensure iptables is present.
   package:
     name: iptables
     state: present
 
-- name: Flush iptables the first time playbook runs.
-  command:
-    cmd: iptables -F
-    creates: /usr/local/sbin/firewall.sh
+- name: Set sysctl all rp_filter to strict.
+  sysctl:
+    name: net.ipv4.conf.all.rp_filter
+    value: '1'
+    sysctl_set: true
+    state: present
+    reload: true
 
-- name: Copy firewall script into place.
-  template:
-    src: "{{ firewall_template | default(firewall_template) }}"
-    dest: /usr/local/sbin/firewall.sh
-    owner: root
-    group: root
-    mode: 0744
-  notify: restart firewall
+- name: Set sysctl default rp_filter to strict.
+  sysctl:
+    name: net.ipv4.conf.default.rp_filter
+    value: '1'
+    sysctl_set: true
+    state: present
+    reload: true
 
-- name: Copy firewall init script into place.
-  template:
-    src: firewall.init.j2
-    dest: /etc/init.d/firewall
-    owner: root
-    group: root
+- name: Set sysctl rp_filter to strict
+  sysctl:
+    name: net.ipv4.conf.all.rp_filter
+    value: '1'
+    sysctl_set: true
+    state: present
+    reload: true
+
+- name: Ensure rule directory exists.
+  file:
+    path: '{{ iptables_save_path }}'
+    state: directory
     mode: 0755
-  when: "ansible_facts.service_mgr != 'systemd'"
 
-- name: Copy firewall systemd unit file into place (for systemd systems).
+- name: Copy IPv4 rules into place.
+  vars:
+    additional_rules: '{{ firewall_additional_rules }}'
+    add_nat_rules: true
   template:
-    src: firewall.unit.j2
-    dest: /etc/systemd/system/firewall.service
+    src: rules.j2
+    dest: '{{ iptables_save_path }}/{{ iptables_file_name }}'
     owner: root
     group: root
     mode: 0644
-  when: "ansible_facts.service_mgr == 'systemd'"
 
-- name: Configure the firewall service.
-  service:
-    name: firewall
-    state: "{{ firewall_state }}"
-    enabled: "{{ firewall_enabled_at_boot }}"
+- name: Copy IPv6 rules into place.
+  vars:
+    additional_rules: '{{ firewall_ip6_additional_rules }}'
+  template:
+    src: rules.j2
+    dest: '{{ iptables_save_path }}/{{ ip6tables_file_name }}'
+    owner: root
+    group: root
+    mode: 0644
+  when: firewall_enable_ipv6 | bool
+
+- name: Apply IPv4 rules.
+  iptables_state:
+    state: restored
+    path: '{{ iptables_save_path }}/{{ iptables_file_name }}'
+  async: "{{ ansible_timeout }}"
+  poll: 0
+
+- name: Apply IPv6 rules.
+  iptables_state:
+    ip_version: ipv6
+    state: restored
+    path: '{{ iptables_save_path }}/{{ ip6tables_file_name }}'
+  async: "{{ ansible_timeout }}"
+  poll: 0
+  when: firewall_enable_ipv6 | bool
+
+- import_tasks: setup-persistence.yml
+  when: firewall_enabled_at_boot | bool
 
 - import_tasks: disable-other-firewalls.yml
   when: firewall_disable_firewalld or firewall_disable_ufw

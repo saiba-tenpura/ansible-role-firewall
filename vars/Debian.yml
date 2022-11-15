@@ -1,0 +1,5 @@
+---
+iptables_service_package: iptables-persistent
+iptables_save_path: /etc/iptables
+iptables_file_name: rules.v4
+ip6tables_file_name: rules.v6

@@ -1,0 +1,17 @@
+---
+- name: Ensure iptables service package is present
+  package:
+    name: '{{ iptables_service_package }}'
+    state: present
+
+- name: Configure the iptables services
+  block:
+    - service:
+        name: iptables
+        state: "{{ firewall_state }}"
+        enabled: "{{ firewall_enabled_at_boot }}"
+    - service:
+        name: ip6tables
+        state: "{{ firewall_state }}"
+        enabled: "{{ firewall_enabled_at_boot }}"
+      when: firewall_enable_ipv6 | bool
