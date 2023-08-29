@@ -40,7 +40,7 @@
 - name: Copy IPv4 rules into place.
   vars:
     additional_rules: '{{ firewall_additional_rules }}'
-    add_nat_rules: true
+    protocol: 'v4'
   template:
     src: rules.j2
     dest: '{{ iptables_save_path }}/{{ iptables_file_name }}'
@@ -51,6 +51,7 @@
 - name: Copy IPv6 rules into place.
   vars:
     additional_rules: '{{ firewall_ip6_additional_rules }}'
+    protocol: 'v6'
   template:
     src: rules.j2
     dest: '{{ iptables_save_path }}/{{ ip6tables_file_name }}'
@@ -60,22 +61,13 @@
   when: firewall_enable_ipv6 | bool
 
 - name: Apply IPv4 rules.
-  iptables_state:
-    state: restored
-    path: '{{ iptables_save_path }}/{{ iptables_file_name }}'
-  async: "{{ ansible_timeout }}"
-  poll: 0
+  shell: 'iptables-restore < {{ iptables_save_path }}/{{ iptables_file_name }}'
 
 - name: Apply IPv6 rules.
-  iptables_state:
-    ip_version: ipv6
-    state: restored
-    path: '{{ iptables_save_path }}/{{ ip6tables_file_name }}'
-  async: "{{ ansible_timeout }}"
-  poll: 0
+  shell: 'ip6tables-restore < {{ iptables_save_path }}/{{ ip6tables_file_name }}'
   when: firewall_enable_ipv6 | bool
 
-- import_tasks: setup-persistence.yml
+- import_tasks: setup-services.yml
   when: firewall_enabled_at_boot | bool
 
 - import_tasks: disable-other-firewalls.yml

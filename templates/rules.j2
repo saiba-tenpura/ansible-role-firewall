@@ -11,6 +11,11 @@
 # Drop Invalid Packets
 -A INPUT -m conntrack --ctstate INVALID -j DROP
 
+{% if protocol == 'v6' %}
+# Accept all ICMP packets. Unlike with IPv4, it's not a good idea to block ICMPv6 traffic as IPv6 is much more heavily dependent on it:
+-A INPUT -p ipv6-icmp -j ACCEPT
+{% endif %}
+
 # Open ports.
 {# Add a rule for each open port #}
 {% for port in firewall_allowed_tcp_ports %}
@@ -34,7 +39,7 @@
 {% endif %}
 COMMIT
 
-{% if add_nat_rules is defined and add_nat_rules %}
+{% if protocol == 'v4' %}
 * nat
 :PREROUTING ACCEPT [0:0]
 :INPUT ACCEPT [0:0]
