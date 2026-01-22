@@ -12,9 +12,19 @@
 -A INPUT -m conntrack --ctstate INVALID -j DROP
 
 {% if protocol == 'v6' %}
-# Accept all ICMP packets. Unlike with IPv4, it's not a good idea to block ICMPv6 traffic as IPv6 is much more heavily dependent on it:
--A INPUT -p ipv6-icmp -j ACCEPT
+# Accept ICMPv6 message types necessary for SLAAC plus echo request/reply
+# Unlike with IPv4, it's not a good idea to block ICMPv6 traffic as IPv6 is much more heavily dependent on it:
+-A INPUT -p ipv6-icmp --icmpv6-type 128 -j ACCEPT
+-A INPUT -p ipv6-icmp --icmpv6-type 129 -j ACCEPT
+-A INPUT -p ipv6-icmp --icmpv6-type 133 -j ACCEPT
+-A INPUT -p ipv6-icmp --icmpv6-type 134 -j ACCEPT
+-A INPUT -p ipv6-icmp --icmpv6-type 135 -j ACCEPT
+-A INPUT -p ipv6-icmp --icmpv6-type 136 -j ACCEPT
 {% endif %}
+
+# Allow NTP traffic for time synchronization.
+-A OUTPUT -p udp --dport 123 -j ACCEPT
+-A INPUT -p udp --sport 123 -j ACCEPT
 
 # Open ports.
 {# Add a rule for each open port #}
